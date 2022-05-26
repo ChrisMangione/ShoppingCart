@@ -18,7 +18,7 @@ namespace ShoppingCart.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<CurrencyModel>> GetCountries()
+        public async Task<ActionResult<IEnumerable<CurrencyModel>>> GetCountries()
         {
             try
             {
@@ -27,7 +27,7 @@ namespace ShoppingCart.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred in GetProducts");
-                throw;
+                return StatusCode(500, "Internal server error");
             }
         }
     }

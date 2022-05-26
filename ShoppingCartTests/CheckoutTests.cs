@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -5,6 +6,7 @@ using Moq;
 using ShoppingCart.Controllers;
 using ShoppingCart.Interfaces;
 using ShoppingCart.Models;
+using System.Threading.Tasks;
 
 namespace ShoppingCartTests
 {
@@ -27,14 +29,15 @@ namespace ShoppingCartTests
         [DataRow("AUD")]
         [DataRow("CNY")]
         [DataRow("USD")]
-        public void CalculateShipping_LowerBound_CalculationCorrect(string currency)
+        public async Task CalculateShipping_LowerBound_CalculationCorrect(string currency)
         {
             var rate = _exchangeRateService.GetExchangeRate(currency).Result;
             var totalCost = 25M * rate;
             var expectedResult = 10;
 
             var checkoutController = new CheckoutController(_logger, _checkoutService, _exchangeRateService);
-            var result = checkoutController.CalculateShipping(totalCost, currency).Result;
+            var actionResult = await checkoutController.CalculateShipping(totalCost, currency);
+            var result = actionResult.GetActionResult();
 
             Assert.IsTrue(result == expectedResult * rate, $"Lower Bound shipping calculation error with currency: {currency} ");
         }
@@ -43,20 +46,21 @@ namespace ShoppingCartTests
         [DataRow("AUD")]
         [DataRow("CNY")]
         [DataRow("USD")]
-        public void CalculateShipping_UpperBound_CalculationCorrect(string currency)
+        public async Task CalculateShipping_UpperBound_CalculationCorrect(string currency)
         {
             var rate = _exchangeRateService.GetExchangeRate(currency).Result;
             var totalCost = 51M * rate;
             var expectedResult = 20;
 
             var checkoutController = new CheckoutController(_logger, _checkoutService, _exchangeRateService);
-            var result = checkoutController.CalculateShipping(totalCost, currency).Result;
+            var actionResult = await checkoutController.CalculateShipping(totalCost, currency);
+            var result = actionResult.GetActionResult();
 
             Assert.IsTrue(result == expectedResult * rate, $"Upper Bound shipping calculation error with currency: {currency} ");
         }
 
         [TestMethod]
-        public void Checkout_WithProduct_ExpectedResult()
+        public async Task Checkout_WithProduct_ExpectedResult()
         {
             var dto = new CheckoutDTO
             {
@@ -67,13 +71,14 @@ namespace ShoppingCartTests
             var expectedResult = 18M;
 
             var checkoutController = new CheckoutController(_logger, _checkoutService, _exchangeRateService);
-            var result = checkoutController.Checkout(dto).Result;
+            var actionResult = await checkoutController.Checkout(dto);
+            var result = actionResult.GetActionResult();
 
             Assert.IsTrue(result == expectedResult, $"Checkout Calculation error. Exepected:{expectedResult} Actual:{result}");
         }
 
         [TestMethod]
-        public void Checkout_WithProducts_ExpectedResult()
+        public async Task Checkout_WithProducts_ExpectedResult()
         {
             var dto = new CheckoutDTO
             {
@@ -84,7 +89,8 @@ namespace ShoppingCartTests
             var expectedResult = 81M;
 
             var checkoutController = new CheckoutController(_logger, _checkoutService, _exchangeRateService);
-            var result = checkoutController.Checkout(dto).Result;
+            var actionResult = await checkoutController.Checkout(dto);
+            var result = actionResult.GetActionResult();
 
             Assert.IsTrue(result == expectedResult, $"Checkout Calculation error. Exepected:{expectedResult} Actual:{result}");
         }

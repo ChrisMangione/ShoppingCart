@@ -28,26 +28,28 @@ namespace ShoppingCartTests
         }
 
         [TestMethod]
-        public void GetProducts_WithCurrency_ProductCountCorrect()
+        public async Task GetProducts_WithCurrency_ProductCountCorrect()
         {
             var currency = "AUD";
             var expectedResult = 4;
 
             var productController = new ProductController(_logger, _productRepository, _exchangeRateService);
-            var result = productController.GetProducts(currency).Result.Count();
+            var actionResult = await productController.GetProducts(currency);
+            var result = actionResult.GetActionResult().Count();
 
             Assert.IsTrue(result == expectedResult, $"Incorrect number of products returned. Expected: {expectedResult} Actual: {result}");
         }
 
         [TestMethod]
-        public void GetProducts_WithCurrency_ProductCalculationCorrect()
+        public async Task GetProducts_WithCurrency_ProductCalculationCorrect()
         {
             var currency = "CNY";
             var rate = _exchangeRateService.GetExchangeRate(currency).Result;
             var expectedResult = 14.30M * rate;
 
             var productController = new ProductController(_logger, _productRepository, _exchangeRateService);
-            var result = productController.GetProducts(currency).Result.First(o => o.Name == "Durian").Price;
+            var actionResult = await productController.GetProducts(currency);
+            var result = actionResult.GetActionResult().First(o => o.Name == "Durian").Price;
 
             Assert.IsTrue(result == expectedResult, $"Product price calculation incorrect. Expected: {expectedResult} Actual: {result}");
         }

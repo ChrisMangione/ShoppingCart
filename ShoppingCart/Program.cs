@@ -1,3 +1,4 @@
+using ShoppingCart;
 using ShoppingCart.Interfaces;
 using ShoppingCart.Services;
 
@@ -23,6 +24,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapControllerRoute(
     name: "default",

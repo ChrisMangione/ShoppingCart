@@ -21,32 +21,34 @@ namespace ShoppingCart.Controllers
         }
 
         [HttpGet]
-        public async Task<decimal> CalculateShipping(decimal totalCost, string currency)
+        public async Task<ActionResult<decimal>> CalculateShipping(decimal totalCost, string currency)
         {
             try
             {
                 decimal exhangeRate = await _exchangeRatesService.GetExchangeRate(currency);
-                return await _checkoutService.CalculateShipping(totalCost, exhangeRate);
+                var shipping = await _checkoutService.CalculateShipping(totalCost, exhangeRate);
+                return Ok(shipping);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Shipping calculation error");
-                throw;
+                return StatusCode(500, "Internal server error");
             }
         }
 
         [HttpPost]
-        public async Task<decimal> Checkout([FromBody] CheckoutDTO checkoutObject)
+        public async Task<ActionResult<decimal>> Checkout([FromBody] CheckoutDTO checkoutObject)
         {
             try
             {
                 decimal exhangeRate = await _exchangeRatesService.GetExchangeRate(checkoutObject.Currency);
-                return await _checkoutService.Checkout(checkoutObject.Products, exhangeRate);
+                var total = await _checkoutService.Checkout(checkoutObject.Products, exhangeRate);
+                return Ok(total);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Checkout error");
-                throw;
+                return StatusCode(500, "Internal server error");
             }
         }
     }

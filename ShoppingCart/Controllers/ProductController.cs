@@ -20,17 +20,18 @@ namespace ShoppingCart.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<ProductModel>> GetProducts(string currency = "AUD")
+        public async Task<ActionResult<IEnumerable<ProductModel>>> GetProducts(string currency = "AUD")
         {
             try
             {
                 decimal exhangeRate = await _exchangeRatesService.GetExchangeRate(currency);
-                return await _repository.GetProducts(exhangeRate);
+                var products = await _repository.GetProducts(exhangeRate);
+                return Ok(products);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred in GetProducts");
-                throw;
+                return StatusCode(500, "Internal server error");
             }
         }
     }
